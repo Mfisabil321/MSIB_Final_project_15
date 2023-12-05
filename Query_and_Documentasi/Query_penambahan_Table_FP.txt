@@ -1,0 +1,140 @@
+------Penambahan Table baru
+------Table time_dimension----------
+
+CREATE TABLE time_dimension (
+    id SERIAL PRIMARY KEY,
+    full_date DATE,
+    day_of_week VARCHAR(20),
+    day_of_month INTEGER,
+    day_of_year INTEGER,
+    week_of_year INTEGER,
+    month INTEGER,
+    quarter INTEGER,
+    year INTEGER
+);
+
+
+
+INSERT INTO time_dimension (full_date, day_of_week, day_of_month, day_of_year, week_of_year, month, quarter, year)
+SELECT 
+    d::DATE AS full_date,
+    to_char(d, 'Day') AS day_of_week,
+    EXTRACT(DAY FROM d) AS day_of_month,
+    EXTRACT(DOY FROM d) AS day_of_year,
+    EXTRACT(WEEK FROM d) AS week_of_year,
+    EXTRACT(MONTH FROM d) AS month,
+    EXTRACT(QUARTER FROM d) AS quarter,
+    EXTRACT(YEAR FROM d) AS year
+FROM 
+    generate_series('2023-01-01'::TIMESTAMP, '2023-12-31'::TIMESTAMP, '1 day'::INTERVAL) d;
+
+
+
+ALTER TABLE time_dimension
+ADD COLUMN formatted_date VARCHAR(20);
+
+UPDATE time_dimension
+SET formatted_date = TO_CHAR(full_date, 'FMMonth DD, YYYY');
+
+
+UPDATE time_dimension
+SET orders_id = orders.id
+FROM orders
+WHERE time_dimension.formatted_date = TO_CHAR(orders.created_at, 'FMMonth DD, YYYY');
+
+----Table product_rate-------------
+
+CREATE TABLE product_rate (
+    id SERIAL PRIMARY KEY,
+    order_items_id INTEGER,
+    product_id INTEGER,
+    amount_product INTEGER,
+    rating INTEGER,
+    product_name VARCHAR(100);
+    category_id INTEGER;
+    category_name VARCHAR(100);
+    FOREIGN KEY (order_items_id) REFERENCES order_items(id),
+    FOREIGN KEY (product_id) REFERENCES order_items(product_id)
+); 
+
+INSERT INTO product_rate (order_items_id, product_id, amount_product)
+SELECT oi.id AS order_items_id, oi.product_id AS product_id, oi.amount AS amount_product
+FROM order_items oi;
+
+ALTER TABLE product_rate
+ADD order_id INTEGER,
+ADD CONSTRAINT fk_order_id FOREIGN KEY (order_id) REFERENCES order_items(order_id);
+
+ALTER TABLE product_rate
+ADD product_name VARCHAR(100);
+
+UPDATE product_rate pr
+SET product_name = p.name
+FROM products p
+WHERE pr.product_id = p.id;
+
+ALTER TABLE product_rate
+ADD product_category INTEGER;
+
+UPDATE product_rate pr
+SET product_category = p.category_id
+FROM products p
+WHERE pr.product_id = p.id;
+
+UPDATE product_rate
+SET product_category = 
+    CASE 
+        WHEN product_category = 1 THEN 'Furniture'
+        WHEN product_category = 2 THEN 'Otomotive'
+        WHEN product_category = 3 THEN 'Tech'
+        WHEN product_category = 5 THEN 'Fashion'
+        WHEN product_category = 6 THEN 'Sport'
+        WHEN product_category = 7 THEN 'Food'
+        ELSE 'Unknown' -- Jika ada nilai lain yang tidak sesuai
+    END;
+
+ALTER TABLE product_rate
+RENAME COLUMN product_category TO category_id;
+
+UPDATE product_rate pr
+SET category_name = pc.name
+FROM product_category pc
+WHERE pr.category_id = pc.id;
+
+UPDATE product_rate
+SET rating = 
+    CASE 
+        WHEN amount_product BETWEEN 1 AND 20 THEN 1
+        WHEN amount_product BETWEEN 21 AND 40 THEN 2
+        WHEN amount_product BETWEEN 41 AND 60 THEN 3
+        WHEN amount_product BETWEEN 61 AND 80 THEN 4
+        WHEN amount_product BETWEEN 81 AND 100 THEN 5
+        ELSE NULL -- Jika tidak sesuai dengan kriteria
+    END;
+
+------Table customer_gender------------
+
+CREATE TABLE customers_gender (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER,
+    gender_customer VARCHAR(200),
+    estimation_gender INTEGER,
+    FOREIGN KEY (customer_id) REFERENCES customers(id)
+);
+
+
+INSERT INTO customers_gender (customer_id, gender_customer, estimation_gender)
+SELECT id AS customer_id,
+       gender AS gender_customer,
+       CASE
+           WHEN gender = 'F' THEN 1
+           WHEN gender = 'M' THEN 1
+           ELSE NULL
+       END AS estimation_gender
+FROM customers;
+
+
+
+
+
+
