@@ -1,4 +1,4 @@
-# Dibimbing - Kampus Merdeka 1 - Final Project Template
+# Dibimbing - Kampus Merdeka 1 - Final Project kelompok 15
 
 ## How to
 - In order to spin up the containers, first you have to build all the Docker images needed using 
@@ -13,6 +13,8 @@
     - Access the Airflow on port `8081`
     - Access the Metabase on port `3001`, for the username and password, you can try to access the [.env](/.env) file
     - Since we have 2 Postgres containers, you can use `dataeng-warehouse-postgres` container as your data warehouse and ignore the `dataeng-ops-postgres` container since it is only being used for the opetrational purposes.
+- create modeling in postgres adding 3 tables
+    -The file is in the query_and_documentasi folder, the file name is Query_penambahan_table_FP
 ---
 ## Folder Structure
 
@@ -39,24 +41,3 @@ Here is the place where you can modify or add a new docker stack if you decide t
 This folder contains script needed in order to automate an initializations process on docker-container setup.
 
 ---
-## Grading Criteria
-
-**Code Quality (20%)**
-- Code Readability (5%)
-- Code Efficiency (5%)
-- Documentation (10%)
-
-**Project Delivery (30%)**
-- Standard Template (6%)
-- Data Platform Improvisation (12%)
-- Data Modelling Improvisation (12%)
-
-**Implementation (40%)**
-- Data Extraction (Standard / Improved) (15%)
-- Data Pipeline (Standard / Best-Practice) (15%)
-- Data Analysis (10%)
-
-**Presentation (10%)**
-- Slide Content (4%)
-- Slide Design (3%)
-- Communication (3%)
